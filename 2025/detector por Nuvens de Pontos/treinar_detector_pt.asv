@@ -1,0 +1,41 @@
+% === Carregar Labels e Dados ===
+labelFile = 'C:\Users\pecci\OneDrive\Desktop\Dataset\dataset_teste.mat';
+labelData = load(labelFile);
+gTruth = labelData.gTruth;  % groundTruthLidar
+
+% Converter em datastore para treinamento
+[pcds, bxds] = lidarObjectDetectorTrainingData(gTruth);
+trainingData = combine(pcds, bxds);
+
+% === Definir Configuração ===
+classes = ["Can"];
+anchorBoxes = {
+    [0.06 0.07 0.12 0     0.06;     % orientação 0°
+     0.07 0.07 0.12 pi/2  0.06]     % orientação 90°
+};
+
+
+
+% Especifique o alcance do point cloud (ajuste conforme seu sensor)
+pcRange = [-10, 10, -10, 10, -2, 2];  % [xmin,xmax, ymin,ymax, zmin,zmax]
+voxelSize = [0.1, 0.1];
+
+detector = pointPillarsObjectDetector(pcRange, classes, anchorBoxes, ...
+    VoxelSize=voxelSize);
+
+% === Opções de Treinamento ===
+options = trainingOptions("adam", ...
+    MaxEpochs=30, ...
+    MiniBatchSize=4, ...
+    InitialLearnRate=0.001, ...
+    BatchNormalizationStatistics="moving", ...
+    ResetInputNormalization=false, ...
+    ExecutionEnvironment=canUseGPU*"gpu" + ~canUseGPU*"cpu", ...
+    Plots="training-progress", ...
+    CheckpointPath="C:\Users\pecci\OneDrive\Desktop\Checkpoints");
+
+% === Treinamento ===
+[detector, info] = trainPointPillarsObjectDetector(trainingData, detector, options);
+
+% === Salvar Detector ===
+save("C:\Users\pecci\OneDrive\Desktop\Detectores\Detector_teste.mat", "detector", "info");

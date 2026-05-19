@@ -1,0 +1,13 @@
+train: Rascal.2.v13i.yolov11/train/images
+val: Rascal.2.v13i.yolov11/valid/images
+test: Rascal.2.v13i.yolov11/test/images
+
+nc: 57
+names: ['cam10PratoC', 'cam10PratoD', 'cam11PratoC1', 'cam11PratoC2', 'cam11PratoCN1', 'cam11PratoD', 'cam11PratoD1', 'cam11PratoE', 'cam12PratoD', 'cam12PratoD1', 'cam12PratoDN1', 'cam12PratoE', 'cam1PratoD', 'cam1PratoE', 'cam1PratoE1', 'cam2Prato', 'cam3PratoD', 'cam3PratoE', 'cam4PratoS', 'cam5PratoS', 'cam6PratoD', 'cam6PratoE', 'cam6PratoE1', 'cam6PratoE2', 'cam7Molho1', 'cam7Molho2', 'cam7MolhoD2', 'cam8PratoC', 'cam8PratoCA', 'cam8PratoCN', 'cam9PratoC', 'recordings1', 'recordings10', 'recordings11', 'recordings12', 'recordings13', 'recordings14', 'recordings15', 'recordings16', 'recordings17', 'recordings18', 'recordings19', 'recordings2', 'recordings20', 'recordings21', 'recordings22', 'recordings23', 'recordings24', 'recordings25', 'recordings26', 'recordings3', 'recordings4', 'recordings5', 'recordings6', 'recordings7', 'recordings8', 'recordings9']
+
+roboflow:
+  workspace: ethara
+  project: rascal.2
+  version: 13
+  license: Private
+  url: https://app.roboflow.com/ethara/rascal.2/13

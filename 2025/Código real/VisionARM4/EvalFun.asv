@@ -1,0 +1,120 @@
+function idx = EvalFun(pack, centers3D, bboxes, labels, status,shrinkFactor)
+% Projeta centros 3D na imagem usando matriz intrínseca e marca pontos
+% Função de avaliação
+    
+    colorImage = pack{2};
+
+    focalLength = [604.3037 602.5643]; %Como foi calibrado
+    principalPoint = [321.5102 235.7259]; %Como foi calibrado
+
+    % Extrai parâmetros
+    fx = focalLength(1);
+    fy = focalLength(2);
+    cx = principalPoint(1);
+    cy = principalPoint(2);
+
+    % Projeta cada ponto 3D para pixel (u,v)
+    X = centers3D(:,1);
+    Y = centers3D(:,2);
+    Z = centers3D(:,3);
+
+    % Evita divisão por zero
+    valid = Z > 0;
+    u = zeros(size(Z));
+    v = zeros(size(Z));
+    u(valid) = fx .* X(valid) ./ Z(valid) + cx;
+    v(valid) = fy .* Y(valid) ./ Z(valid) + cy;
+
+    % Mostra imagem
+    figure;
+    imshow(colorImage);
+    hold on;
+    
+    idx = {}
+    j = 1;
+    % shrinkFactor Vai de 0 a 1 (0 tamanho normal, 1 degenera)
+    M = ones(numel(labels));
+    M = [M(:,1) M(:,1) M(:,1) M(:,1)]
+    M(:,1) = bboxes(:,3)*shrinkFactor/2;
+    M(:,2) = bboxes(:,4)*shrinkFactor/2;
+    M(:,3) = -bboxes(:,3)*shrinkFactor;
+    M(:,4) = -bboxes(:,4)*shrinkFactor;
+
+    bboxes1 = bboxes + M;
+    for k = 1:length(Z)
+        if ((u<bboxes1(k,1))|(u>bboxes1(k,1)+bboxes1(k,3)))|((v<bboxes1(k,2))|(v>bboxes1(k,2)+bboxes1(k,4)))
+            idx{j} = k;
+            j = j+1;
+        end
+    end
+
+    % Plota só pontos válidos
+    for k = 1:length(Z)
+        if ~valid(k)
+            continue
+        end
+        plot(u(k), v(k), 'ro', 'MarkerSize', 10, 'LineWidth', 2);
+        txt = sprintf("%d. %s - %s",k, string(labels(k)), string(status(k)));
+        txt = strrep(txt, "_", " ");
+        text(u(k)+5, v(k), txt, 'Color','yellow', 'FontSize',10, 'FontWeight','bold');
+    end
+
+    title("Center estimative");
+    hold off;
+
+    figure;
+    
+    [bboxes, scores, labels] = detect(pack{1}, pack{2});
+
+    [bboxes, scores, selectedIdx] = selectStrongestBbox(bboxes, scores, ...
+        'OverlapThreshold', 0.5);
+    labels = labels(selectedIdx);
+    
+    idxValidos = scores >= 0.6;
+    bboxes = bboxes(idxValidos, :);
+    scores = scores(idxValidos);
+    labels = labels(idxValidos);
+    
+    labelsWithScores = string(labels) + ": " + string(scores);
+    imTested = insertObjectAnnotation(colorImage, "rectangle", bboxes1, labelsWithScores);
+    imshow(imTested);
+    title("Detection");
+    
+    
+    imshow(imTested);
+    hold on;
+   
+    idx = {}
+    j = 1;
+    % shrinkFactor Vai de 0 a 1 (0 tamanho normal, 1 degenera)
+    M = ones(numel(labels));
+    M = [M(:,1) M(:,1) M(:,1) M(:,1)]
+    M(:,1) = bboxes(:,3)*shrinkFactor/2;
+    M(:,2) = bboxes(:,4)*shrinkFactor/2;
+    M(:,3) = -bboxes(:,3)*shrinkFactor;
+    M(:,4) = -bboxes(:,4)*shrinkFactor;
+
+    bboxes1 = bboxes + M;
+    for k = 1:length(Z)
+        if ((u<bboxes1(k,1))|(u>bboxes1(k,1)+bboxes1(k,3)))|((v<bboxes1(k,2))|(v>bboxes1(k,2)+bboxes1(k,4)))
+            idx{j} = k;
+            j = j+1;
+        end
+    end
+
+    % Plota só pontos válidos
+    for k = 1:length(Z)
+        if ~valid(k)
+            continue
+        end
+        plot(u(k), v(k), 'ro', 'MarkerSize', 10, 'LineWidth', 2);
+        txt = sprintf("%d. %s - %s",k, string(labels(k)), string(status(k)));
+        txt = strrep(txt, "_", " ");
+        text(u(k)+5, v(k), txt, 'Color','yellow', 'FontSize',10, 'FontWeight','bold');
+    end
+
+    title("Center estimative");
+    hold off;
+
+
+end
